@@ -29,6 +29,7 @@ INSTALLED_APPS = [
     "apps.accounts",
     "apps.products",
     "apps.orders",
+    "apps.shopify",
 ]
 
 MIDDLEWARE = [
@@ -100,3 +101,8 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),
     "REFRESH_TOKEN_LIFETIME": timedelta(days=7),
 }
+
+SHOPIFY_SHOP = os.getenv("SHOPIFY_SHOP", "")
+SHOPIFY_CLIENT_ID = os.getenv("SHOPIFY_CLIENT_ID", "")
+SHOPIFY_CLIENT_SECRET = os.getenv("SHOPIFY_CLIENT_SECRET", "")
+SHOPIFY_API_VERSION = os.getenv("SHOPIFY_API_VERSION", "2026-10")
