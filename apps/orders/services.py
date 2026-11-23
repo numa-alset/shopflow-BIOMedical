@@ -22,49 +22,49 @@ def create_order(user, items: list) -> Order:
 
     for item in items:
 
-        product_id = item["product_id"]
+        variant_id = item.get("variant_id")
+        product_id = item.get("product_id")
         quantity = item["quantity"]
 
         if quantity <= 0:
             raise ValidationError("Quantity must be greater than zero.")
 
-        product = (
-            Product.objects
-            .select_for_update()
-            .filter(id=product_id)
-            .first()
-        )
-
-        if product is None:
-            raise ValidationError(
-                f"Product {product_id} does not exist or is inactive."
+        if variant_id is not None:
+            variant = (
+                ProductVariant.objects
+                .select_for_update()
+                .select_related("product")
+                .filter(id=variant_id)
+                .first()
             )
-
-        if not product.is_active and product.status.upper() != "ACTIVE":
-            raise ValidationError(
-                f"Product {product_id} does not exist or is inactive."
+        else:
+            product = (
+                Product.objects
+                .select_for_update()
+                .prefetch_related("variants")
+                .filter(id=product_id)
+                .first()
             )
+            if product is None:
+                raise ValidationError(
+                    f"Product {product_id} does not exist or is inactive."
+                )
+            variant = product.variants.first()
 
-        if product.stock < quantity:
-            raise ValidationError(
-                f"Not enough stock for {product.name}."
-            )
-
-        unit_price = product.price
-
-        variant = product.variants.first()
         if variant is None:
-            variant = ProductVariant.objects.create(
-                shopify_variant_id=f"local-{product.id}",
-                product=product,
-                title="Default",
-                sku=product.sku,
-                price=product.price,
-                inventory_quantity=product.stock,
+            raise ValidationError("Product variant does not exist.")
+
+        if variant.product.status.upper() != "ACTIVE":
+            raise ValidationError(
+                f"Product {variant.product.id} does not exist or is inactive."
             )
-        elif variant.price != product.price:
-            variant.price = product.price
-            variant.save(update_fields=["price", "updated_at"])
+
+        if variant.inventory_quantity < quantity:
+            raise ValidationError(
+                f"Not enough stock for {variant.product.name}."
+            )
+
+        unit_price = variant.price
 
         OrderItem.objects.create(
             order=order,
@@ -72,9 +72,6 @@ def create_order(user, items: list) -> Order:
             quantity=quantity,
             unit_price=unit_price,
         )
-
-        product.stock -= quantity
-        product.save(update_fields=["stock", "updated_at"])
 
         total += unit_price * quantity
 

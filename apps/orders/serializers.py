@@ -55,8 +55,16 @@ class OrderSerializer(serializers.ModelSerializer):
         ]
         
 class OrderItemCreateSerializer(serializers.Serializer):
-    product_id = serializers.IntegerField(min_value=1)
+    product_id = serializers.IntegerField(min_value=1, required=False)
+    variant_id = serializers.IntegerField(min_value=1, required=False)
     quantity = serializers.IntegerField(min_value=1)
+
+    def validate(self, attrs):
+        if bool(attrs.get("product_id")) == bool(attrs.get("variant_id")):
+            raise serializers.ValidationError(
+                "Provide exactly one of product_id or variant_id."
+            )
+        return attrs
 
 class OrderCreateSerializer(serializers.Serializer):
     items = OrderItemCreateSerializer(many=True)
@@ -67,11 +75,16 @@ class OrderCreateSerializer(serializers.Serializer):
                 "An order must contain at least one item."
             )
 
-        product_ids = [item["product_id"] for item in value]
+        item_keys = [
+            ("variant", item["variant_id"])
+            if item.get("variant_id") is not None
+            else ("product", item["product_id"])
+            for item in value
+        ]
 
-        if len(product_ids) != len(set(product_ids)):
+        if len(item_keys) != len(set(item_keys)):
             raise serializers.ValidationError(
-                "A product cannot appear more than once in an order."
+                "A product or variant cannot appear more than once in an order."
             )
 
         return value
