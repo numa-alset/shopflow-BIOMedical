@@ -88,6 +88,8 @@ class ProductVariantAdmin(admin.ModelAdmin):
 
     list_filter = (
         "product",
+        "minimum_stock",
+        "inventory_quantity",
     )
 
     search_fields = (
