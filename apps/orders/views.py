@@ -1,4 +1,4 @@
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.views import APIView
 
@@ -8,13 +8,12 @@ from .serializers import OrderSerializer
 
 class OrderListView(APIView):
 
-    # permission_classes = [IsAuthenticated]
-    permission_classes = [AllowAny]  # Temporarily allow any user for testing purposes
+    permission_classes = [IsAuthenticated]
 
     def get(self, request):
         orders = (
             Order.objects
-            .filter(user=request.user)
+            .all()
             .prefetch_related("items__variant__product")
         )
 

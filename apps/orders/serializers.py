@@ -51,7 +51,9 @@ class OrderSerializer(serializers.ModelSerializer):
         model = Order
         fields = [
             "id",
+            "shopify_order_id",
             "customer_email",
+            "currency",
             "status",
             "total",
             "items",
@@ -60,6 +62,9 @@ class OrderSerializer(serializers.ModelSerializer):
 
         read_only_fields = [
             "id",
+            "shopify_order_id",
+            "customer_email",
+            "currency",
             "status",
             "total",
             "created_at",

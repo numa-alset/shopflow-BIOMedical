@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.db import IntegrityError, transaction
 from django.test import TestCase
 
 from .models import Order, OrderItem
@@ -27,3 +28,10 @@ class OrderModelTests(TestCase):
         self.assertEqual(item.sku_snapshot, "SKU-123")
         self.assertEqual(item.product_title_snapshot, "Test product")
         self.assertEqual(item.subtotal, Decimal("25.00"))
+
+    def test_shopify_order_id_must_be_unique(self):
+        Order.objects.create(shopify_order_id="123456")
+
+        with self.assertRaises(IntegrityError):
+            with transaction.atomic():
+                Order.objects.create(shopify_order_id="123456")
