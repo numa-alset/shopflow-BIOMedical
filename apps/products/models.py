@@ -41,6 +41,13 @@ class ProductVariant(models.Model):
         unique=True,
     )
 
+    shopify_inventory_item_id = models.CharField(
+        max_length=100,
+        unique=True,
+        null=True,
+        blank=True,
+    )
+
     product = models.ForeignKey(
         Product,
         on_delete=models.CASCADE,
