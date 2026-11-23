@@ -2,12 +2,10 @@ from rest_framework import serializers
 
 from .models import Order, OrderItem
 
+
 class OrderItemSerializer(serializers.ModelSerializer):
 
-    product_name = serializers.CharField(
-        source="variant.product.name",
-        read_only=True,
-    )
+    product_name = serializers.SerializerMethodField()
 
     subtotal = serializers.DecimalField(
         max_digits=12,
@@ -20,6 +18,9 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = [
             "id",
             "variant",
+            "shopify_variant_id",
+            "sku_snapshot",
+            "product_title_snapshot",
             "product_name",
             "quantity",
             "unit_price",
@@ -28,9 +29,19 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
         read_only_fields = [
             "id",
+            "variant",
+            "shopify_variant_id",
+            "sku_snapshot",
+            "product_title_snapshot",
             "unit_price",
             "subtotal",
         ]
+
+    def get_product_name(self, obj):
+        return obj.product_title_snapshot or (
+            obj.variant.product.name if obj.variant_id else ""
+        )
+
 
 class OrderSerializer(serializers.ModelSerializer):
 
@@ -53,38 +64,3 @@ class OrderSerializer(serializers.ModelSerializer):
             "total",
             "created_at",
         ]
-        
-class OrderItemCreateSerializer(serializers.Serializer):
-    product_id = serializers.IntegerField(min_value=1, required=False)
-    variant_id = serializers.IntegerField(min_value=1, required=False)
-    quantity = serializers.IntegerField(min_value=1)
-
-    def validate(self, attrs):
-        if bool(attrs.get("product_id")) == bool(attrs.get("variant_id")):
-            raise serializers.ValidationError(
-                "Provide exactly one of product_id or variant_id."
-            )
-        return attrs
-
-class OrderCreateSerializer(serializers.Serializer):
-    items = OrderItemCreateSerializer(many=True)
-
-    def validate_items(self, value):
-        if not value:
-            raise serializers.ValidationError(
-                "An order must contain at least one item."
-            )
-
-        item_keys = [
-            ("variant", item["variant_id"])
-            if item.get("variant_id") is not None
-            else ("product", item["product_id"])
-            for item in value
-        ]
-
-        if len(item_keys) != len(set(item_keys)):
-            raise serializers.ValidationError(
-                "A product or variant cannot appear more than once in an order."
-            )
-
-        return value

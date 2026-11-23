@@ -9,6 +9,9 @@ class OrderItemInline(admin.TabularInline):
 
     fields = (
         "variant",
+        "shopify_variant_id",
+        "sku_snapshot",
+        "product_title_snapshot",
         "quantity",
         "unit_price",
         "subtotal_display",
@@ -77,6 +80,9 @@ class OrderItemAdmin(admin.ModelAdmin):
     list_display = (
         "order",
         "variant",
+        "shopify_variant_id",
+        "sku_snapshot",
+        "product_title_snapshot",
         "quantity",
         "unit_price",
         "subtotal_display",
