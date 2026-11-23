@@ -1,5 +1,6 @@
 from decimal import Decimal
 
+from django.core.exceptions import ValidationError
 from django.test import TestCase
 
 from apps.orders.models import Order
@@ -59,11 +60,40 @@ class OrderSyncServiceTests(TestCase):
         self.assertEqual(item.unit_price, Decimal("12.50"))
 
     def test_syncs_line_item_without_local_variant(self):
-        order = self.service.sync_order(self.payload)
+        with self.assertLogs(
+            "apps.shopify.services.order_sync",
+            level="WARNING",
+        ) as logs:
+            order = self.service.sync_order(self.payload)
+
         item = order.items.get()
 
         self.assertIsNone(item.variant)
         self.assertEqual(item.shopify_variant_id, "gid://shopify/ProductVariant/111")
+        self.assertIn("variant_id=gid://shopify/ProductVariant/111", logs.output[0])
+
+    def test_rejects_negative_order_total(self):
+        payload = {**self.payload, "total_price": "-1.00"}
+
+        with self.assertRaises(ValidationError):
+            self.service.sync_order(payload)
+
+    def test_rejects_negative_line_item_price(self):
+        payload = {
+            **self.payload,
+            "line_items": [
+                {**self.payload["line_items"][0], "price": "-1.00"}
+            ],
+        }
+
+        with self.assertRaises(ValidationError):
+            self.service.sync_order(payload)
+
+    def test_validates_customer_email_with_django_field(self):
+        payload = {**self.payload, "email": "not-an-email"}
+
+        with self.assertRaises(ValidationError):
+            self.service.sync_order(payload)
 
     def test_repeated_sync_does_not_duplicate_order_or_items(self):
         first_order = self.service.sync_order(self.payload)
