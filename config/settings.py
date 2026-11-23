@@ -2,11 +2,17 @@ import os
 from datetime import timedelta
 from pathlib import Path
 
+
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = os.getenv(
     "DJANGO_SECRET_KEY",
     "django-insecure-change-this-secret-key-before-production",
+)
+SHOPIFY_WEBHOOK_BASE_URL =  os.getenv(
+    "SHOPIFY_WEBHOOK_BASE_URL",
+    default="",
 )
 DEBUG = os.getenv("DJANGO_DEBUG", "true").lower() in {"1", "true", "yes"}
 ALLOWED_HOSTS = [
