@@ -86,6 +86,13 @@ class ProductVariant(models.Model):
 
     @property
     def stock_status(self):
+        """
+        Calculate stock status using Shopify inventory
+        and ERP minimum stock configuration.
+        """
+
+        if self.inventory_quantity <= 0:
+            return "out_of_stock"
 
         if self.minimum_stock is None:
             return "not_configured"
