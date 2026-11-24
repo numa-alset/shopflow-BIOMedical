@@ -6,6 +6,8 @@ from apps.shopify.services.product_sync import (
     sync_products,
 )
 
+from apps.shopify.services.order_sync import OrderSyncService
+
 logger = logging.getLogger(__name__)
 
 
@@ -60,6 +62,9 @@ def process_webhook_event(event):
         elif event.topic == "inventory_levels/update":
             return handle_inventory_update(event)
 
+        elif event.topic == "orders/create":
+            return handle_order_create(event)
+
         else:
             raise ShopifyWebhookProcessingError(
                 f"Unsupported Shopify webhook topic: {event.topic}"
@@ -74,6 +79,28 @@ def process_webhook_event(event):
         raise ShopifyWebhookProcessingError(
             f"Event {event.id} failed: {error}"
         ) from error
+
+
+def handle_order_create(event):
+    """
+    Handle a newly created Shopify order.
+    """
+
+    logger.info(
+        "Synchronizing Shopify order from webhook event %s",
+        event.id,
+    )
+
+    service = OrderSyncService()
+
+    order = service.sync_order(event.payload)
+
+    logger.info(
+        "Shopify order synchronized successfully: %s",
+        order.shopify_order_id,
+    )
+
+    return order
 
 
 def handle_product_change(event):

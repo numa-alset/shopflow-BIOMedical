@@ -82,6 +82,9 @@ class OrderSyncService:
 
         return order
 
+
+# utility methods for validation and normalization of Shopify order data
+
     @staticmethod
     def _normalize_line_item(item):
         if not isinstance(item, dict):
