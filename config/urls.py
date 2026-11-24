@@ -8,8 +8,4 @@ urlpatterns = [
     path("api/products/", include("apps.products.urls")),
     path("api/orders/", include("apps.orders.urls")),
     path("api/shopify/", include("apps.shopify.urls")),
-    path(
-    "api/shopify/",
-    include("apps.shopify.urls"),
-),
 ]
