@@ -3,18 +3,13 @@
 from django.conf import settings
 from django.core.exceptions import ImproperlyConfigured
 
+from apps.shopify.constants import SHOPIFY_WEBHOOK_REGISTRATION_TOPICS
 from apps.shopify.client import ShopifyClient, ShopifyAPIError
 
 
 class ShopifyWebhookRegistrationService:
 
-    WEBHOOK_TOPICS = [
-        "PRODUCTS_CREATE",
-        "PRODUCTS_UPDATE",
-        "PRODUCTS_DELETE",
-        "INVENTORY_LEVELS_UPDATE",
-        "ORDERS_CREATE",
-    ]
+    WEBHOOK_TOPICS = SHOPIFY_WEBHOOK_REGISTRATION_TOPICS
     
     GET_WEBHOOK_SUBSCRIPTIONS_QUERY = """
         query GetWebhookSubscriptions {

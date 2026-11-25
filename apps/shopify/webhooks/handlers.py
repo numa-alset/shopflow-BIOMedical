@@ -1,5 +1,13 @@
 import logging
 
+from apps.shopify.constants import (
+    INVENTORY_LEVELS_UPDATE_TOPIC,
+    ORDERS_CREATE_TOPIC,
+    PRODUCT_CREATE_TOPIC,
+    PRODUCT_DELETE_TOPIC,
+    PRODUCT_UPDATE_TOPIC,
+    SHOPIFY_PRODUCT_GID_PREFIX,
+)
 from apps.shopify.services.product_sync import (
     get_shopify_product,
     sync_product,
@@ -35,7 +43,7 @@ def get_shopify_product_gid(payload):
             "Product ID is missing from webhook payload."
         )
 
-    return f"gid://shopify/Product/{product_id}"
+    return f"{SHOPIFY_PRODUCT_GID_PREFIX}{product_id}"
 
 
 def process_webhook_event(event):
@@ -50,19 +58,16 @@ def process_webhook_event(event):
     )
 
     try:
-        if event.topic in (
-            "products/create",
-            "products/update",
-        ):
+        if event.topic in (PRODUCT_CREATE_TOPIC, PRODUCT_UPDATE_TOPIC):
             return handle_product_change(event)
 
-        elif event.topic == "products/delete":
+        elif event.topic == PRODUCT_DELETE_TOPIC:
             return handle_product_delete(event)
 
-        elif event.topic == "inventory_levels/update":
+        elif event.topic == INVENTORY_LEVELS_UPDATE_TOPIC:
             return handle_inventory_update(event)
 
-        elif event.topic == "orders/create":
+        elif event.topic == ORDERS_CREATE_TOPIC:
             return handle_order_create(event)
 
         else:

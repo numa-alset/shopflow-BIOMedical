@@ -1,0 +1,15 @@
+SHOPIFY_PRODUCT_GID_PREFIX = "gid://shopify/Product/"
+
+PRODUCT_CREATE_TOPIC = "products/create"
+PRODUCT_UPDATE_TOPIC = "products/update"
+PRODUCT_DELETE_TOPIC = "products/delete"
+INVENTORY_LEVELS_UPDATE_TOPIC = "inventory_levels/update"
+ORDERS_CREATE_TOPIC = "orders/create"
+
+SHOPIFY_WEBHOOK_REGISTRATION_TOPICS = [
+    "PRODUCTS_CREATE",
+    "PRODUCTS_UPDATE",
+    "PRODUCTS_DELETE",
+    "INVENTORY_LEVELS_UPDATE",
+    "ORDERS_CREATE",
+]
